@@ -32,6 +32,36 @@ namespace DigitalVote.API.Controllers
         }
 
 
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutCandidate(int id, Candidate candidate)
+        {
+            if (id != candidate.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(candidate).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!_context.Candidates.Any(e => e.Id == id))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteCandidate(int id)
         {
