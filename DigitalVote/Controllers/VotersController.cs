@@ -30,6 +30,19 @@ namespace DigitalVote.API.Controllers
             return voter;
         }
 
+        [HttpGet("dni/{dni}")]
+        public async Task<ActionResult<Voter>> GetVoterByDni(string dni)
+        {
+            var voter = await _context.Voters.FirstOrDefaultAsync(v => v.Dni == dni);
+
+            if (voter == null)
+            {
+                return NotFound(new { message = "No se encontró un votante con ese DNI." });
+            }
+
+            return voter;
+        }
+
         [HttpPost]
         public async Task<ActionResult<Voter>> PostVoter(Voter voter)
         {
