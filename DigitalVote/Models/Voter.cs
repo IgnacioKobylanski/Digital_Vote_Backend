@@ -5,6 +5,7 @@
         public int Id { get; set; }
         public string Dni { get; set; } = string.Empty;
         public string FullName { get; set; } = string.Empty;
-        public bool HasVoted { get; set; }
+        public bool HasVoted { get; set; } = false;
+        public DateTime? VoteDate { get; set; }
     }
 }

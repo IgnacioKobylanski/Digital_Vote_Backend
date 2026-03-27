@@ -11,6 +11,11 @@ namespace DigitalVote.API.Models
 
         [Required]
         public int CandidateId { get; set; }
+        public Candidate Candidate { get; set; } = null!;
+
+        [Required]
+        public int PartyId { get; set; }
+        public Party Party { get; set; } = null!;
 
         public DateTime VotedAt { get; set; } = DateTime.Now;
     }
