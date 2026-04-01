@@ -20,14 +20,22 @@ namespace DigitalVote.API.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates()
         {
-            return await _context.Candidates.ToListAsync();
+            return await _context.Candidates
+                .Include(c => c.Party)
+                .ToListAsync();
         }
 
         [HttpPost]
         public async Task<ActionResult<Candidate>> PostCandidate(Candidate candidate)
         {
+            var partyExists = await _context.Parties.AnyAsync(p => p.Id == candidate.PartyId);
+            if (!partyExists) return BadRequest("El partido especificado no existe.");
+
             _context.Candidates.Add(candidate);
             await _context.SaveChangesAsync();
+
+            await _context.Entry(candidate).Reference(c => c.Party).LoadAsync();
+
             return Ok(candidate);
         }
 
@@ -36,10 +44,11 @@ namespace DigitalVote.API.Controllers
         {
             if (id != candidate.Id) return BadRequest();
             _context.Entry(candidate).State = EntityState.Modified;
+
             try { await _context.SaveChangesAsync(); }
             catch (DbUpdateConcurrencyException)
             {
-                if (!_context.Candidates.Any(e => e.Id == id)) return NotFound();
+                if (!CandidateExists(id)) return NotFound();
                 else throw;
             }
             return NoContent();
@@ -50,6 +59,7 @@ namespace DigitalVote.API.Controllers
         {
             var candidate = await _context.Candidates.FindAsync(id);
             if (candidate == null) return NotFound();
+
             _context.Candidates.Remove(candidate);
             await _context.SaveChangesAsync();
             return NoContent();
@@ -68,6 +78,11 @@ namespace DigitalVote.API.Controllers
                 .ToListAsync();
 
             return Ok(results);
+        }
+
+        private bool CandidateExists(int id)
+        {
+            return _context.Candidates.Any(e => e.Id == id);
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using DigitalVote.API.Data;
 using DigitalVote.API.Models;
+using DigitalVote.API.DTOs;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,22 +35,30 @@ namespace DigitalVote.API.Controllers
         public async Task<ActionResult<Voter>> GetVoterByDni(string dni)
         {
             var voter = await _context.Voters.FirstOrDefaultAsync(v => v.Dni == dni);
-
             if (voter == null)
             {
                 return NotFound(new { message = "No se encontró un votante con ese DNI." });
             }
-
             return voter;
         }
 
         [HttpPost]
-        public async Task<ActionResult<Voter>> PostVoter(Voter voter)
+        public async Task<ActionResult<Voter>> PostVoter(VoterCreateDto dto)
         {
+            var voter = new Voter
+            {
+                Dni = dto.Dni,
+                FirstName = dto.FirstName,
+                LastName = dto.LastName,
+                HasVoted = false
+            };
+
             _context.Voters.Add(voter);
             await _context.SaveChangesAsync();
+
             return CreatedAtAction(nameof(GetVoter), new { id = voter.Id }, voter);
         }
+
 
         [HttpPut("{id}")]
         public async Task<IActionResult> PutVoter(int id, Voter voter)
