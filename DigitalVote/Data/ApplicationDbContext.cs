@@ -13,6 +13,7 @@ public class ApplicationDbContext : DbContext
     public DbSet<Candidate> Candidates { get; set; }
     public DbSet<Vote> Votes { get; set; }
     public DbSet<Party> Parties { get; set; }
+    public DbSet<Position> Positions { get; set; }
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -16,12 +16,22 @@ namespace DigitalVote.API.Controllers
         {
             _context = context;
         }
-
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Candidate>>> GetCandidates()
+        public async Task<ActionResult<IEnumerable<CandidateDto>>> GetCandidates()
         {
             return await _context.Candidates
                 .Include(c => c.Party)
+                .Include(c => c.Position)
+                .Select(c => new CandidateDto
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    CandidateImg = c.CandidateImg,
+                    PartyId = c.PartyId,
+                    Party = c.Party,
+                    PositionId = c.PositionId,
+                    Position = c.Position
+                })
                 .ToListAsync();
         }
 
@@ -31,10 +41,14 @@ namespace DigitalVote.API.Controllers
             var partyExists = await _context.Parties.AnyAsync(p => p.Id == candidate.PartyId);
             if (!partyExists) return BadRequest("El partido especificado no existe.");
 
+            var positionExists = await _context.Positions.AnyAsync(p => p.Id == candidate.PositionId);
+            if (!positionExists) return BadRequest("El cargo especificado no existe.");
+
             _context.Candidates.Add(candidate);
             await _context.SaveChangesAsync();
 
             await _context.Entry(candidate).Reference(c => c.Party).LoadAsync();
+            await _context.Entry(candidate).Reference(c => c.Position).LoadAsync();
 
             return Ok(candidate);
         }
@@ -43,9 +57,16 @@ namespace DigitalVote.API.Controllers
         public async Task<IActionResult> PutCandidate(int id, Candidate candidate)
         {
             if (id != candidate.Id) return BadRequest();
+
+            var positionExists = await _context.Positions.AnyAsync(p => p.Id == candidate.PositionId);
+            if (!positionExists) return BadRequest("El cargo especificado no existe.");
+
             _context.Entry(candidate).State = EntityState.Modified;
 
-            try { await _context.SaveChangesAsync(); }
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
             catch (DbUpdateConcurrencyException)
             {
                 if (!CandidateExists(id)) return NotFound();
