@@ -1,4 +1,5 @@
 using DigitalVote.API.Data;
+using DigitalVote.API.Services;
 using Microsoft.EntityFrameworkCore;
 using System.Text.Json.Serialization;
 
@@ -32,6 +33,8 @@ builder.Services.AddControllers().AddJsonOptions(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddScoped<IVoteService, VoteService>();
 
 var app = builder.Build();
 
